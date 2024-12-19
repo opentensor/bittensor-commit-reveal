@@ -58,14 +58,19 @@ async fn generate_commit(
     // Calculate reveal epoch and ensure enough time for SUBTENSOR_PULSE_DELAY pulses
     let mut reveal_epoch = current_epoch + subnet_reveal_period_epochs;
     let mut reveal_block_number = reveal_epoch * tempo_plus_one - netuid_plus_one;
-    let mut blocks_until_reveal = reveal_block_number.saturating_sub(current_block);
+    let mut blocks_until_reveal = reveal_block_number - current_block;
     let mut time_until_reveal = blocks_until_reveal * block_time;
 
     // Ensure at least SUBTENSOR_PULSE_DELAY * period seconds lead time
     while time_until_reveal < SUBTENSOR_PULSE_DELAY * period {
+
+        if blocks_until_reveal > 0 {
+            break;
+        }
+
         reveal_epoch += 1;
         reveal_block_number = reveal_epoch * tempo_plus_one - netuid_plus_one;
-        blocks_until_reveal = reveal_block_number.saturating_sub(current_block);
+        blocks_until_reveal = reveal_block_number - current_block;
         time_until_reveal = blocks_until_reveal * block_time;
     }
 
